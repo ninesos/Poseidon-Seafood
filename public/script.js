@@ -45,11 +45,7 @@ function showModal(message, type) {
     if (type === 'success') {
         modalContent.classList.add('border-success');
         modalHeader.classList.add('bg-success', 'text-white');
-        
-        // Extract queue number from success message
         const queueNumber = message.match(/Q\d+/)[0];
-        
-        // Create formatted message with copy button
         messageEl.innerHTML = `
             <div class="text-center">
                 <p>✔️ Successfully booked! ✔️ <br> Your queue is</p>
@@ -60,8 +56,6 @@ function showModal(message, type) {
                 </button>
             </div>
         `;
-        
-        // Add click handler for copy button
         const copyBtn = messageEl.querySelector('.copy-btn');
         copyBtn.addEventListener('click', async () => {
             try {
@@ -84,19 +78,12 @@ function showModal(message, type) {
     modal.show();
 }
 
-// Add date and time input restrictions and validation
 document.addEventListener('DOMContentLoaded', function() {
     const dateInput = document.getElementById('date');
     const timeInput = document.getElementById('time');
-
-    // Set minimum date to today
     const today = new Date().toISOString().split('T')[0];
     dateInput.min = today;
-
-    // Set time input step to 30 minutes
-    timeInput.step = "1800"; // 30 minutes in seconds
-    
-    // Add time input validation
+    timeInput.step = "300"; //5 min
     timeInput.addEventListener('input', function() {
         if (this.value) {
             if (isValidTime(this.value)) {
@@ -106,8 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-    // Set min and max time
     timeInput.min = "10:00";
     timeInput.max = "22:00";
 });

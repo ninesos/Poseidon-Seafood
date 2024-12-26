@@ -102,7 +102,6 @@ app.post('/api/book', async (req, res) => {
     queues.push(newQueue);
 
     try {
-        // Send new booking notification
         await axios.post('https://api.line.me/v2/bot/message/push', {
             to: process.env.LINE_ADMIN_ID,
             messages: [{ 
