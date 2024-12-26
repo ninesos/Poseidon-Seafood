@@ -81,39 +81,33 @@
             <h2 class="text-center mb-4 text-primary">Make a reservation with Poseidon Seafood</h2>
             <div class="row justify-content-center">
                 <div class="col-md-8 col-lg-6">
-                    <form id="bookingForm" class="shadow p-4 rounded bg-white needs-validation" novalidate>
+                    <form id="bookingForm" class="shadow p-4 rounded bg-white">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" placeholder="Your name" required>
-                            <div class="invalid-feedback">Please enter your name</div>
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" placeholder="You name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="lineId" class="form-label">Line ID <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="lineId" placeholder="Your Line ID" required>
-                            <div class="invalid-feedback">Please enter your Line ID</div>
+                            <label for="lineId" class="form-label">Line ID</label>
+                            <input type="text" class="form-control" id="lineId" placeholder="You Line ID" required>
                         </div>
                         <div class="mb-3">
-                            <label for="table" class="form-label">Table <span class="text-danger">*</span></label>
+                            <label for="table" class="form-label">Table</label>
                             <select id="table" class="form-select" required>
-                                <option value="">Select table size</option>
-                                <option value="Small">Small table (2-4 persons)</option>
-                                <option value="Big">Big Table (5-8 persons)</option>
+                                <option value="Small">Small table</option>
+                                <option value="Big">Big Table</option>
                             </select>
-                            <div class="invalid-feedback">Please select a table size</div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-6">
-                                <label for="date" class="form-label">Date <span class="text-danger">*</span></label>
+                                <label for="date" class="form-label">Date</label>
                                 <input type="date" class="form-control" id="date" required>
-                                <div class="invalid-feedback">Please select a date</div>
                             </div>
                             <div class="col-6">
-                                <label for="time" class="form-label">Time <span class="text-danger">*</span></label>
-                                <input type="time" class="form-control" id="time" step="300" required>
-                                <div class="invalid-feedback">Please select a valid time (10:00 - 22:00)</div>
+                                <label for="time" class="form-label">Time</label>
+                                <input type="time" class="form-control" id="time" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Submit Reservation</button>
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
                     </form>
                 </div>
             </div>
@@ -144,49 +138,22 @@
         </div>
     </footer>
 
-    <section id="booking" class="section py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center mb-4 text-primary">Make a reservation with Poseidon Seafood</h2>
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-lg-6">
-                    <form id="bookingForm" class="shadow p-4 rounded bg-white needs-validation" novalidate>
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" placeholder="Your name" required>
-                            <div class="invalid-feedback">Please enter your name</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="lineId" class="form-label">Line ID <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="lineId" placeholder="Your Line ID" required>
-                            <div class="invalid-feedback">Please enter your Line ID</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="table" class="form-label">Table <span class="text-danger">*</span></label>
-                            <select id="table" class="form-select" required>
-                                <option value="">Select table size</option>
-                                <option value="Small">Small table (2-4 persons)</option>
-                                <option value="Big">Big Table (5-8 persons)</option>
-                            </select>
-                            <div class="invalid-feedback">Please select a table size</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label for="date" class="form-label">Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="date" required>
-                                <div class="invalid-feedback">Please select a date</div>
-                            </div>
-                            <div class="col-6">
-                                <label for="time" class="form-label">Time <span class="text-danger">*</span></label>
-                                <input type="time" class="form-control" id="time" step="300" required>
-                                <div class="invalid-feedback">Please select a valid time (10:00 - 22:00)</div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Submit Reservation</button>
-                    </form>
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingModalLabel">Booking status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
     <script src="script.js"></script>
