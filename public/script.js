@@ -93,8 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    timeInput.min = "10:00";
-    timeInput.max = "22:00";
 });
 
 function isValidTime(time) {
