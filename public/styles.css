@@ -1,0 +1,395 @@
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #555 !important;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 20;
+    padding: 10px 0;
+}
+
+/* Logo Styles */
+.navbar-logo {
+    height: 40px;
+    width: auto;
+    border-radius: 100%;
+}
+
+/* Brand Text Styles */
+.navbar-brand {
+    color: #ffffff !important;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Toggler Styles */
+.navbar-toggler {
+    border-color: rgba(255,255,255,0.5) !important;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Nav Links Styles */
+.navbar-nav .nav-link {
+    color: #ffffff !important;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.3s ease;
+}
+
+/* Add these styles to styles.css */
+.navbar-nav .nav-link {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link.active-section {
+    color: #ffc107 !important;
+}
+
+/* Optional: Add an underline effect for active section */
+.navbar-nav .nav-link.active-section::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #ffc107;
+    bottom: 0;
+    left: 0;
+    transform: scaleX(1);
+    transition: transform 0.3s ease;
+}
+
+/* Remove the previous hover style and replace with this */
+.navbar-nav .nav-link:hover {
+    color: #ffc107 !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #555;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        border-radius: 5px;
+    }
+}
+
+a {
+    color: #ffffff !important;
+}
+
+/* Hero Section */
+.hero-section {
+    height: 80vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; /* เปลี่ยนจาก flex-start เป็น flex-end */
+}
+
+.hero-section img {
+    transform: scaleX(-1);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    position: absolute; /* เพิ่ม position: absolute */
+    bottom: 0; /* เพิ่ม bottom: 0 เพื่อให้ภาพอยู่ด้านล่าง */
+}
+
+.hero-section h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    position: absolute;
+    top: 100px;
+    left: 20px;
+    text-shadow: 2px 2px 5px #000;
+    z-index: 2;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+.hero-section p {
+    font-size: 1.5rem;
+    position: absolute;
+    bottom: 0px;
+    right: 20px;
+    color: #000;
+    text-shadow: 2px 2px 5px #000;
+    z-index: 2;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+.hero-title-line,
+.hero-desc-line {
+    display: inline;
+}
+
+/* สำหรับจอขนาดกลาง */
+@media screen and (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 30px;
+        top: 80px;
+        padding: 8px;
+    }
+    
+    .hero-section p {
+        font-size: 20px;
+        padding: 8px;
+    }
+}
+
+/* สำหรับจอขนาดเล็ก */
+@media screen and (max-width: 480px) {
+    .hero-section h1 {
+        font-size: 1.5rem;
+        padding: 6px;
+        top: 80px;
+        left: 10px;
+        width: auto;
+        white-space: normal;
+    }
+    
+    .hero-title-line {
+        display: block;
+        line-height: 1.4;
+    }
+    
+    .hero-section p {
+        font-size: 1rem;
+        padding: 6px;
+        right: 10px;
+        width: auto;
+        white-space: normal;
+    }
+    
+    .hero-desc-line {
+        display: block;
+        line-height: 1.4;
+    }
+}
+
+/* About Section */
+#about {
+    background-color: #ffffff;
+}
+  
+.img-fixed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 5px solid #ffcc00;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin:10px 0px 10px 0px;
+}
+  
+.img-fixed:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+  
+#about h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #003366;
+    margin-bottom: 1.5rem;
+}
+  
+#about .lead {
+    font-size: 1.2rem;
+    color: #555;
+}
+  
+#about .row img {
+    border: 5px solid #ffcc00;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+  
+#about .row img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+  
+/* Booking Section */
+#booking {
+    background: linear-gradient(to right, #f0f8ff, #e6f7ff);
+    padding: 4rem 1rem;
+    position: relative;
+}
+
+#booking h2 {
+    color: #003366;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Updated Form Validation Styles */
+.invalid-time {
+    border: 2px solid #dc3545 !important;
+    background-color: #fff !important;
+}
+
+.invalid-time:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    border-color: #dc3545 !important;
+}
+
+/* Keep other existing styles */
+#contact {
+    height: 80vh;
+}
+
+
+#contact h2 {
+    padding-bottom: 50px;
+}
+
+#contact p {
+    padding-bottom: 50px;
+}
+
+#contact a {
+    transition: transform 0.3s ease, color 0.3s ease;
+    font-size: 25px;
+    padding: 50px;
+}
+
+#contact a:hover {
+    transform: scale(1.2);
+    color: #ffc107;
+}
+
+@media screen and (max-width: 768px) {
+    #contact a {
+        font-size: 20px;
+        padding: 35px;
+    }
+    
+}
+
+@media screen and (max-width: 480px) {
+    #contact a {
+        font-size: 16px;
+        padding: 5px;
+    }
+    
+}
+
+.footer {
+    background-color: #003366;
+    color: white;
+    padding: 1.5rem 0;
+}
+  
+/* Form Validation */
+input:invalid {
+    border: 2px solid #dc3545;
+}
+  
+input:invalid:focus {
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+}
+  
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+    display: none;
+}
+  
+input:invalid + .invalid-feedback {
+    display: block;
+}
+
+/* Time Input Validation Styles */
+.invalid-time {
+    border: 2px solid #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.invalid-time:focus {
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5) !important;
+    outline: none;
+}
+
+input[type="time"]:hover {
+    cursor: pointer;
+}
+
+/* Additional form styling */
+.form-control:focus {
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px #b4a0a033;
+}
+
+.modal-content {
+    border-width: 3px;
+}
+
+.modal-header {
+    transition: background-color 0.3s ease;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.modal .btn-close {
+    color: white;
+    opacity: 1;
+}
+
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease-in-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Add these styles to styles.css */
+.queue-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #0056b3;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.copy-btn {
+    transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+    transform: translateY(-2px);
+}
+
+.copy-btn i {
+    transition: transform 0.3s ease;
+}
+
+.copy-btn:hover i {
+    transform: scale(1.2);
+}
