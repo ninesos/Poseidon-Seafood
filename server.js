@@ -14,8 +14,8 @@ const cors = require('cors');
 app.use(cors());
 
 const TABLE_LIMITS = {
-    'Big': 8,
-    'Small': 2
+    'Big': 7,
+    'Small': 14
 };
 
 const RESTAURANT_HOURS = {

@@ -84,15 +84,15 @@
                     <form id="bookingForm" class="shadow p-4 rounded bg-white">
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" placeholder="You name" required>
+                            <input type="text" class="form-control" id="name" placeholder="You name">
                         </div>
                         <div class="mb-3">
                             <label for="lineId" class="form-label">Line ID</label>
-                            <input type="text" class="form-control" id="lineId" placeholder="You Line ID" required>
+                            <input type="text" class="form-control" id="lineId" placeholder="You Line ID">
                         </div>
                         <div class="mb-3">
                             <label for="table" class="form-label">Table</label>
-                            <select id="table" class="form-select" required>
+                            <select id="table" class="form-select">
                                 <option value="Small">Small table</option>
                                 <option value="Big">Big Table</option>
                             </select>
@@ -100,11 +100,11 @@
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label for="date" class="form-label">Date</label>
-                                <input type="date" class="form-control" id="date" required>
+                                <input type="date" class="form-control" id="date">
                             </div>
                             <div class="col-6">
                                 <label for="time" class="form-label">Time</label>
-                                <input type="time" class="form-control" id="time" required>
+                                <input type="time" class="form-control" id="time">
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Submit</button>
@@ -150,6 +150,48 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="tableSelectionModal" tabindex="-1" aria-labelledby="tableSelectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="tableSelectionModalLabel">Select Your Table</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="table-option card h-100" data-table-type="Small">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chair fa-3x mb-3 text-primary"></i>
+                                    <h5 class="card-title">Small Table</h5>
+                                    <p class="card-text">2-4 People</p>
+                                    <ul class="list-unstyled text-start">
+                                        <li><i class="fas fa-check text-success me-2"></i>Intimate setting</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Perfect for couples</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Cozy atmosphere</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-option card h-100" data-table-type="Big">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-3x mb-3 text-primary"></i>
+                                    <h5 class="card-title">Big Table</h5>
+                                    <p class="card-text">5-8 People</p>
+                                    <ul class="list-unstyled text-start">
+                                        <li><i class="fas fa-check text-success me-2"></i>Group friendly</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Family gatherings</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Spacious seating</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
