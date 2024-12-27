@@ -3,7 +3,7 @@ document.head.insertAdjacentHTML('beforeend', `
 .table-option {
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 2px solid transparent;
+    border: 2px solid #ddd;
 }
 
 .table-option:hover {
