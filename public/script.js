@@ -248,7 +248,6 @@ document.getElementById('table').addEventListener('change', function () {
     const tableSelectButton = document.getElementById('tableSelectButton');
     tableSelectButton.style.border = ''; // reset
 });
-
 // Form submission handler
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -393,6 +392,9 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         if (response.ok) {
             showModal(`✔️ Successfully, Your queue is ${data.queueNumber} ✔️`, 'success');
             e.target.reset();
+            const tableButton = document.getElementById('tableSelectButton');
+            tableButton.textContent = 'Select a table';
+            tableButton.style.border = '';
             document.getElementById('tableSelectButton').textContent = 'Select a table';
             Object.values(fields).forEach(field => {
                 field.style.border = '';
