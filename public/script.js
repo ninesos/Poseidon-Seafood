@@ -68,8 +68,8 @@ function isValidTime(time) {
     
     const [hours, minutes] = time.split(':').map(Number);
     const totalMinutes = hours * 60 + minutes;
-    const openTime = 10 * 60;  // 10:00 AM
-    const closeTime = 22 * 60; // 10:00 PM
+    const openTime = 10 * 60;
+    const closeTime = 22 * 60;
     
     if (totalMinutes < openTime || totalMinutes > closeTime) {
         showModal('Please select a time between 10:00 AM and 10:00 PM.', 'error');
@@ -149,13 +149,13 @@ function showModal(message, type) {
     modal.show();
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Fetch holidays
-    fetch('/api/holidays')
-        .then(response => response.json())
-        .then(data => {
-            holidays = data;
-        });
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('/api/holidays');
+        holidays = await response.json();
+    } catch (error) {
+        console.error('Error fetching holidays:', error);
+    }
 
     const tableSelect = document.getElementById('table');
     const tableSelectParent = tableSelect.parentElement;
@@ -227,8 +227,10 @@ document.addEventListener('DOMContentLoaded', function() {
     dateInput.min = today;
 
     dateInput.addEventListener('change', function() {
-        if (holidays.includes(this.value)) {
-            showModal('Sorry, this date is a restaurant holiday. Please select another date.', 'error');
+        const selectedDate = this.value.replace(/-/g, '/');
+        if (holidays.includes(selectedDate)) {
+            showModal('Sorry, the restaurant is closed on this date.', 'error');
+            this.value = '';
             this.classList.add('is-invalid');
         } else {
             this.classList.remove('is-invalid');
@@ -271,35 +273,14 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         field.classList.remove('is-invalid');
     });
 
-    const emptyFields = [];
-    Object.entries(fields).forEach(([key, field]) => {
-        if (!field.value.trim()) {
-            emptyFields.push(key);
-            if (key === 'table') {
-                document.getElementById('tableSelectButton').style.border = '2px solid #dc3545';
-            } else {
-                field.style.border = '2px solid #dc3545';
-                field.classList.add('is-invalid');
-            }
-        }
-    });
-
-    function isWithinBusinessHours(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        const bookingTime = hours * 60 + minutes;
-        
-        const [openHours, openMinutes] = ['10', '00'].map(Number);
-        const [closeHours, closeMinutes] = ['22', '00'].map(Number);
-        
-        const openTime = openHours * 60 + openMinutes;
-        const closeTime = closeHours * 60 + closeMinutes;
-        
-        return bookingTime >= openTime && bookingTime <= closeTime;
-    }
-
-    function isValidTimeInterval(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return minutes % 5 === 0;
+    // Check if selected date is a holiday
+    const selectedDate = fields.date.value.replace(/-/g, '/');
+    if (holidays.includes(selectedDate)) {
+        showModal('Sorry, the restaurant is closed on this date.', 'error');
+        fields.date.classList.add('is-invalid');
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit';
+        return;
     }
 
     if (!fields.name.value) {
@@ -334,15 +315,6 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         submitButton.innerHTML = 'Submit';
         return;
     }
-
-    dateInput.addEventListener('change', function() {
-        if (holidays.includes(this.value)) {
-            showModal('Sorry, this date is a restaurant holiday. Please select another date.', 'error');
-            this.classList.add('is-invalid');
-        } else {
-            this.classList.remove('is-invalid');
-        }
-    });
 
     if (!fields.time.value) {
         showModal('Please select a "Time"', 'error');
@@ -416,3 +388,21 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         submitButton.innerHTML = 'Submit';
     }
 });
+
+function isWithinBusinessHours(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const bookingTime = hours * 60 + minutes;
+    
+    const [openHours, openMinutes] = ['10', '00'].map(Number);
+    const [closeHours, closeMinutes] = ['22', '00'].map(Number);
+    
+    const openTime = openHours * 60 + openMinutes;
+    const closeTime = closeHours * 60 + closeMinutes;
+    
+    return bookingTime >= openTime && bookingTime <= closeTime;
+}
+
+function isValidTimeInterval(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return minutes % 5 === 0;
+}
