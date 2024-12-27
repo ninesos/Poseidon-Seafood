@@ -335,13 +335,14 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
-    if (holidays.includes(fields.date.value)) {
-        showModal('Sorry, this date is a restaurant holiday. Please select another date.', 'error');
-        fields.date.classList.add('is-invalid');
-        submitButton.disabled = false;
-        submitButton.innerHTML = 'Submit';
-        return;
-    }
+    dateInput.addEventListener('change', function() {
+        if (holidays.includes(this.value)) {
+            showModal('Sorry, this date is a restaurant holiday. Please select another date.', 'error');
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+        }
+    });
 
     if (!fields.time.value) {
         showModal('Please select a "Time"', 'error');
