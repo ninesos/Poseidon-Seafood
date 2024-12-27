@@ -68,16 +68,22 @@ function isValidTime(time) {
     
     const [hours, minutes] = time.split(':').map(Number);
     const totalMinutes = hours * 60 + minutes;
-    const openTime = 10 * 60;  // 10:00
-    const closeTime = 22 * 60; // 22:00
+    const openTime = 10 * 60;  // 10:00 AM
+    const closeTime = 22 * 60; // 10:00 PM
     
     // Check if time is within business hours
     if (totalMinutes < openTime || totalMinutes > closeTime) {
+        showModal('Please select a time between 10:00 AM and 10:00 PM.', 'error');
         return false;
     }
     
     // Check if minutes are in 5-minute intervals
-    return minutes % 5 === 0;
+    if (minutes % 5 !== 0) {
+        showModal('Please select a time in 5-minute intervals.', 'error');
+        return false;
+    }
+    
+    return true;
 }
 
 function isValidAdvanceBooking(dateStr, timeStr) {
@@ -153,6 +159,27 @@ function showModal(message, type) {
 document.addEventListener('DOMContentLoaded', function() {
     const tableSelect = document.getElementById('table');
     const tableSelectParent = tableSelect.parentElement;
+    const sections = document.querySelectorAll("section[id]");
+    
+    window.addEventListener("scroll", navHighlighter);
+    
+    function navHighlighter() {
+        let scrollY = window.pageYOffset;
+        
+        sections.forEach(current => {
+            const sectionHeight = current.offsetHeight;
+            const sectionTop = current.offsetTop - 100;
+            const sectionId = current.getAttribute("id");
+            
+            if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                document.querySelector(".navbar-nav a[href*=" + sectionId + "]").classList.add("active-section");
+            } else {
+                document.querySelector(".navbar-nav a[href*=" + sectionId + "]").classList.remove("active-section");
+            }
+        });
+    }
+    
+    navHighlighter();
     
     // Hide the original select element
     tableSelect.style.cssText = 'display: none !important; position: absolute; opacity: 0;';
@@ -204,7 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const today = new Date().toISOString().split('T')[0];
     dateInput.min = today;
-    timeInput.step = "300"; // 5 min intervals
 
     // Add input event listeners
     const inputs = [nameInput, lineIdInput, dateInput, timeInput];
@@ -215,19 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.remove('is-invalid');
             }
         });
-    });
-
-    // Time input validation
-    timeInput.addEventListener('change', function() {
-        if (this.value) {
-            if (!isValidTime(this.value)) {
-                const suggestedTime = roundToNearestFiveMinutes(this.value);
-                showModal(`Please select a time in 5-minute intervals. The nearest available time would be ${suggestedTime}`, 'error');
-                this.classList.add('invalid-time');
-            } else {
-                this.classList.remove('invalid-time');
-            }
-        }
     });
 });
 
@@ -267,36 +280,78 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         }
     });
 
-    if (emptyFields.length > 0) {
-        const fieldNames = emptyFields.map(field => {
-            switch(field) {
-                case 'name': return 'Name';
-                case 'lineId': return 'Line ID';
-                case 'table': return 'Table';
-                case 'date': return 'Date';
-                case 'time': return 'Time';
-                default: return field;
-            }
-        });
+    // Time validation functions
+    function isWithinBusinessHours(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const bookingTime = hours * 60 + minutes;
+        
+        const [openHours, openMinutes] = ['10', '00'].map(Number);
+        const [closeHours, closeMinutes] = ['22', '00'].map(Number);
+        
+        const openTime = openHours * 60 + openMinutes;
+        const closeTime = closeHours * 60 + closeMinutes;
+        
+        return bookingTime >= openTime && bookingTime <= closeTime;
+    }
 
-        showModal(`Please fill in the following required fields: ${fieldNames.join(', ')}`, 'error');
+    function isValidTimeInterval(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return minutes % 5 === 0;
+    }
+
+    //validation checks
+    if (!fields.name.value) {
+        showModal('Please select a "Name"', 'error');
+        fields.name.classList.add('is-invalid');
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
         return;
     }
 
-    // Time validation
+    if (!fields.lineId.value) {
+        showModal('Please select a "Line ID"', 'error');
+        fields.lineId.classList.add('is-invalid');
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit';
+        return;
+    }
+
+    if (!fields.table.value) {
+        showModal('Please select a "Table Size"', 'error');
+        fields.table.classList.add('is-invalid');
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit';
+        return;
+    }
+
+    if (!fields.date.value) {
+        showModal('Please select a "Date"', 'error');
+        fields.date.classList.add('is-invalid');
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit';
+        return;
+    }
+
     if (!fields.time.value) {
-        showModal('Please select a time.', 'error');
+        showModal('Please select a "Time"', 'error');
         fields.time.classList.add('is-invalid');
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
         return;
     }
 
-    if (!isValidTime(fields.time.value)) {
-        const suggestedTime = roundToNearestFiveMinutes(fields.time.value);
-        showModal(`Please select a time in 5-minute intervals. The nearest available time would be ${suggestedTime}`, 'error');
+    // Check business hours first
+    if (!isWithinBusinessHours(fields.time.value)) {
+        showModal('Please select a time between 10:00 AM and 10:00 PM.', 'error');
+        fields.time.classList.add('is-invalid');
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit';
+        return;
+    }
+
+    // Then check time intervals
+    if (!isValidTimeInterval(fields.time.value)) {
+        showModal('Please select a time in 5-minute intervals.', 'error');
         fields.time.classList.add('is-invalid');
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
@@ -305,8 +360,8 @@ document.getElementById('bookingForm').addEventListener('submit', async function
 
     // Check if booking is at least 2 hours in advance
     if (!isValidAdvanceBooking(fields.date.value, fields.time.value)) {
-        showModal('คุณต้องจองคิวล่วงหน้า 2 ชั่วโมง', 'error');
-        fields.time.classList.add('invalid-time');
+        showModal('You must make a reservation 2 hours in advance.', 'error');
+        fields.time.classList.add('is-invalid');
         fields.date.classList.add('is-invalid');
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
