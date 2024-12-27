@@ -244,6 +244,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+document.getElementById('table').addEventListener('change', function () {
+    const tableSelectButton = document.getElementById('tableSelectButton');
+    tableSelectButton.style.border = ''; // reset
+});
+
 // Form submission handler
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -316,9 +321,10 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
-    if (!fields.table.value) {
+    if (!fields.table.value) { // ตรวจสอบว่าไม่ได้เลือกโต๊ะ
         showModal('Please select a "Table Size"', 'error');
-        fields.table.classList.add('is-invalid');
+        const tableSelectButton = document.getElementById('tableSelectButton');
+        tableSelectButton.style.border = '2px solid #dc3545'; // เปลี่ยนกรอบเป็นสีแดง
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
         return;
