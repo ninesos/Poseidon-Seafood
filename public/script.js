@@ -246,8 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.getElementById('table').addEventListener('change', function () {
     const tableSelectButton = document.getElementById('tableSelectButton');
-    tableSelectButton.style.border = ''; // reset
+    tableSelectButton.style.border = ''; // รีเซ็ตกรอบสีแดง
 });
+
 // Form submission handler
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -392,10 +393,13 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         if (response.ok) {
             showModal(`✔️ Successfully, Your queue is ${data.queueNumber} ✔️`, 'success');
             e.target.reset();
-            const tableButton = document.getElementById('tableSelectButton');
-            tableButton.textContent = 'Select a table';
-            tableButton.style.border = '';
+            
+            // Reset table selection modal and button
             document.getElementById('tableSelectButton').textContent = 'Select a table';
+            document.querySelectorAll('.table-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
             Object.values(fields).forEach(field => {
                 field.style.border = '';
                 field.classList.remove('is-invalid');
