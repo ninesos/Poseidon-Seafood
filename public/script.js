@@ -50,8 +50,7 @@ document.head.insertAdjacentHTML('beforeend', `
 </style>
 `);
 
-let holidays = [];
-
+// Function to round time to nearest 5 minutes
 function roundToNearestFiveMinutes(time) {
     const [hours, minutes] = time.split(':').map(Number);
     const totalMinutes = hours * 60 + minutes;
@@ -63,19 +62,22 @@ function roundToNearestFiveMinutes(time) {
     return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
 }
 
+// Time validation function
 function isValidTime(time) {
     if (!time) return false;
     
     const [hours, minutes] = time.split(':').map(Number);
     const totalMinutes = hours * 60 + minutes;
-    const openTime = 10 * 60;
-    const closeTime = 22 * 60;
+    const openTime = 10 * 60;  // 10:00 AM
+    const closeTime = 22 * 60; // 10:00 PM
     
+    // Check if time is within business hours
     if (totalMinutes < openTime || totalMinutes > closeTime) {
         showModal('Please select a time between 10:00 AM and 10:00 PM.', 'error');
         return false;
     }
     
+    // Check if minutes are in 5-minute intervals
     if (minutes % 5 !== 0) {
         showModal('Please select a time in 5-minute intervals.', 'error');
         return false;
@@ -91,12 +93,16 @@ function isValidAdvanceBooking(dateStr, timeStr) {
     
     bookingDate.setHours(hours, minutes, 0, 0);
     
+    // Calculate time difference in milliseconds
     const timeDiff = bookingDate.getTime() - now.getTime();
+    
+    // Convert to hours (1000ms * 60s * 60m = 3600000ms in 1 hour)
     const hoursDiff = timeDiff / 3600000;
     
     return hoursDiff >= 2;
 }
 
+// Modal display function
 function showModal(message, type) {
     const modalEl = document.getElementById('bookingModal');
     const messageEl = document.getElementById('modalMessage');
@@ -149,14 +155,8 @@ function showModal(message, type) {
     modal.show();
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        const response = await fetch('/api/holidays');
-        holidays = await response.json();
-    } catch (error) {
-        console.error('Error fetching holidays:', error);
-    }
-
+// Initialize form functionality
+document.addEventListener('DOMContentLoaded', function() {
     const tableSelect = document.getElementById('table');
     const tableSelectParent = tableSelect.parentElement;
     const sections = document.querySelectorAll("section[id]");
@@ -181,8 +181,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     navHighlighter();
     
+    // Hide the original select element
     tableSelect.style.cssText = 'display: none !important; position: absolute; opacity: 0;';
     
+    // Create table select button
     let tableButton = document.getElementById('tableSelectButton');
     if (!tableButton) {
         tableButton = document.createElement('button');
@@ -193,12 +195,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         tableSelectParent.appendChild(tableButton);
     }
     
+    // Initialize table selection modal
     const tableSelectionModal = new bootstrap.Modal(document.getElementById('tableSelectionModal'));
     
+    // Add click event to button
     tableButton.addEventListener('click', function() {
         tableSelectionModal.show();
     });
     
+    // Handle table option selection
     document.querySelectorAll('.table-option').forEach(option => {
         option.addEventListener('click', function() {
             document.querySelectorAll('.table-option').forEach(opt => {
@@ -218,6 +223,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 
+    // Initialize form inputs
     const dateInput = document.getElementById('date');
     const timeInput = document.getElementById('time');
     const nameInput = document.getElementById('name');
@@ -226,17 +232,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const today = new Date().toISOString().split('T')[0];
     dateInput.min = today;
 
-    dateInput.addEventListener('change', function() {
-        const selectedDate = this.value.replace(/-/g, '/');
-        if (holidays.includes(selectedDate)) {
-            showModal('Sorry, the restaurant is closed on this date.', 'error');
-            this.value = '';
-            this.classList.add('is-invalid');
-        } else {
-            this.classList.remove('is-invalid');
-        }
-    });
-
+    // Add input event listeners
     const inputs = [nameInput, lineIdInput, dateInput, timeInput];
     inputs.forEach(input => {
         input.addEventListener('input', function() {
@@ -250,9 +246,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 document.getElementById('table').addEventListener('change', function () {
     const tableSelectButton = document.getElementById('tableSelectButton');
-    tableSelectButton.style.border = '';
+    tableSelectButton.style.border = ''; // รีเซ็ตกรอบสีแดง
 });
 
+// Form submission handler
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -268,21 +265,46 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         time: document.getElementById('time')
     };
 
+    // Reset field styles
     Object.values(fields).forEach(field => {
         field.style.border = '';
         field.classList.remove('is-invalid');
     });
 
-    // Check if selected date is a holiday
-    const selectedDate = fields.date.value.replace(/-/g, '/');
-    if (holidays.includes(selectedDate)) {
-        showModal('Sorry, the restaurant is closed on this date.', 'error');
-        fields.date.classList.add('is-invalid');
-        submitButton.disabled = false;
-        submitButton.innerHTML = 'Submit';
-        return;
+    // Check for empty fields
+    const emptyFields = [];
+    Object.entries(fields).forEach(([key, field]) => {
+        if (!field.value.trim()) {
+            emptyFields.push(key);
+            if (key === 'table') {
+                document.getElementById('tableSelectButton').style.border = '2px solid #dc3545';
+            } else {
+                field.style.border = '2px solid #dc3545';
+                field.classList.add('is-invalid');
+            }
+        }
+    });
+
+    // Time validation functions
+    function isWithinBusinessHours(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const bookingTime = hours * 60 + minutes;
+        
+        const [openHours, openMinutes] = ['10', '00'].map(Number);
+        const [closeHours, closeMinutes] = ['22', '00'].map(Number);
+        
+        const openTime = openHours * 60 + openMinutes;
+        const closeTime = closeHours * 60 + closeMinutes;
+        
+        return bookingTime >= openTime && bookingTime <= closeTime;
     }
 
+    function isValidTimeInterval(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return minutes % 5 === 0;
+    }
+
+    //validation checks
     if (!fields.name.value) {
         showModal('Please select a "Name"', 'error');
         fields.name.classList.add('is-invalid');
@@ -299,10 +321,10 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
-    if (!fields.table.value) {
+    if (!fields.table.value) { // ตรวจสอบว่าไม่ได้เลือกโต๊ะ
         showModal('Please select a "Table Size"', 'error');
         const tableSelectButton = document.getElementById('tableSelectButton');
-        tableSelectButton.style.border = '2px solid #dc3545';
+        tableSelectButton.style.border = '2px solid #dc3545'; // เปลี่ยนกรอบเป็นสีแดง
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
         return;
@@ -324,6 +346,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
+    // Check business hours first
     if (!isWithinBusinessHours(fields.time.value)) {
         showModal('Please select a time between 10:00 AM and 10:00 PM.', 'error');
         fields.time.classList.add('is-invalid');
@@ -332,6 +355,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
+    // Then check time intervals
     if (!isValidTimeInterval(fields.time.value)) {
         showModal('Please select a time in 5-minute intervals.', 'error');
         fields.time.classList.add('is-invalid');
@@ -340,6 +364,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
+    // Check if booking is at least 2 hours in advance
     if (!isValidAdvanceBooking(fields.date.value, fields.time.value)) {
         showModal('You must make a reservation 2 hours in advance.', 'error');
         fields.time.classList.add('is-invalid');
@@ -349,6 +374,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
+    // Submit form
     try {
         const response = await fetch('/api/book', {
             method: 'POST',
@@ -368,6 +394,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
             showModal(`✔️ Successfully, Your queue is ${data.queueNumber} ✔️`, 'success');
             e.target.reset();
             
+            // Reset table selection modal and button
             document.getElementById('tableSelectButton').textContent = 'Select a table';
             document.querySelectorAll('.table-option').forEach(option => {
                 option.classList.remove('selected');
@@ -388,21 +415,3 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         submitButton.innerHTML = 'Submit';
     }
 });
-
-function isWithinBusinessHours(timeStr) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    const bookingTime = hours * 60 + minutes;
-    
-    const [openHours, openMinutes] = ['10', '00'].map(Number);
-    const [closeHours, closeMinutes] = ['22', '00'].map(Number);
-    
-    const openTime = openHours * 60 + openMinutes;
-    const closeTime = closeHours * 60 + closeMinutes;
-    
-    return bookingTime >= openTime && bookingTime <= closeTime;
-}
-
-function isValidTimeInterval(timeStr) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return minutes % 5 === 0;
-}
