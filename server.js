@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 let queues = [];
+let holidays = [];
 
 const cors = require('cors');
 app.use(cors());
@@ -22,6 +23,10 @@ const RESTAURANT_HOURS = {
     open: '10:00',
     close: '22:00'
 };
+
+function isHoliday(date) {
+    return holidays.includes(date);
+}
 
 function isWithinBusinessHours(timeStr) {
     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -84,6 +89,12 @@ function getGroupedQueues() {
 app.post('/api/book', async (req, res) => {
     const { name, lineId, table, date, time } = req.body;
 
+    if (isHoliday(date)) {
+        return res.status(400).json({
+            message: 'Sorry, the restaurant is closed on this date'
+        });
+    }
+
     if (!isWithinBusinessHours(time)) {
         return res.status(400).json({
             message: 'Booking time must be between 10:00 and 22:00'
@@ -128,6 +139,10 @@ app.delete('/api/queues/:queueNumber', (req, res) => {
     res.json({ message: `Queue ${queueNumber} removed` });
 });
 
+app.get('/api/holidays', (req, res) => {
+    res.json(holidays);
+});
+
 app.post('/line-webhook', (req, res) => {
     const { events } = req.body;
     events.forEach(event => {
@@ -136,6 +151,24 @@ app.post('/line-webhook', (req, res) => {
         if (message.toLowerCase() === 'q') {
             const queueList = getGroupedQueues();
             replyMessage(event.replyToken, queueList);
+        } else if (message.toLowerCase() === 'qc') {
+            const holidayList = holidays.length > 0 ? 
+                `Restaurant holidays:\n${holidays.join('\n')}` : 
+                'No holidays scheduled';
+            replyMessage(event.replyToken, holidayList);
+        } else if (message.startsWith('c ')) {
+            const date = message.split(' ')[1];
+            if (date && /^\d{4}\/\d{2}\/\d{2}$/.test(date)) {
+                if (!holidays.includes(date)) {
+                    holidays.push(date);
+                    holidays.sort();
+                    replyMessage(event.replyToken, `Added holiday: ${date}`);
+                } else {
+                    replyMessage(event.replyToken, 'This date is already marked as a holiday');
+                }
+            } else {
+                replyMessage(event.replyToken, 'Invalid date format. Please use YYYY/MM/DD');
+            }
         } else if (message.startsWith('d')) {
             const queueNumber = message.split(' ')[1];
             queues = queues.filter(q => q.queueNumber !== queueNumber);
