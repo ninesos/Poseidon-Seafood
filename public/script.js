@@ -162,8 +162,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         const response = await fetch('/api/holidays');
         holidays = await response.json();
-        updateHolidayStyles(holidays);
-        initializeDatePicker();
     } catch (error) {
         console.error('Error fetching holidays:', error);
     }
@@ -448,67 +446,3 @@ document.getElementById('date').addEventListener('change', function() {
         this.classList.remove('is-invalid');
     }
 });
-
-function createHolidayStyles() {
-    const styleEl = document.createElement('style');
-    document.head.appendChild(styleEl);
-    return styleEl;
-}
-
-// Function to update holiday styles
-function updateHolidayStyles(holidays) {
-    const styleEl = document.querySelector('#holiday-styles') || createHolidayStyles();
-    styleEl.id = 'holiday-styles';
-    
-    // Create CSS rules for each holiday date
-    const cssRules = holidays.map(date => `
-        td[data-date="${date}"] {
-            background-color: #ffebeb !important;
-            color: #dc3545 !important;
-            position: relative;
-        }
-        td[data-date="${date}"]::after {
-            content: '🏖️';
-            position: absolute;
-            top: 50%;
-            right: 5px;
-            transform: translateY(-50%);
-            font-size: 0.8em;
-        }
-    `).join('\n');
-    
-    styleEl.textContent = cssRules;
-}
-
-// Function to highlight holidays in the calendar
-function initializeDatePicker() {
-    const dateInput = document.getElementById('date');
-    
-    // Create a MutationObserver to watch for calendar popup
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.addedNodes.length) {
-                const calendar = document.querySelector('input[type="date"]::-webkit-calendar-picker-indicator');
-                if (calendar) {
-                    highlightHolidaysInCalendar();
-                }
-            }
-        });
-    });
-    
-    // Start observing the document for calendar popup
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-    
-    // Update date input class when value changes
-    dateInput.addEventListener('change', function() {
-        const selectedDate = this.value.split('-').join('/');
-        if (holidays.includes(selectedDate)) {
-            this.classList.add('holiday-selected');
-        } else {
-            this.classList.remove('holiday-selected');
-        }
-    });
-}
