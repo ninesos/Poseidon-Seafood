@@ -50,6 +50,9 @@ document.head.insertAdjacentHTML('beforeend', `
 </style>
 `);
 
+// Global variables
+let holidays = [];
+
 // Function to round time to nearest 5 minutes
 function roundToNearestFiveMinutes(time) {
     const [hours, minutes] = time.split(':').map(Number);
@@ -62,7 +65,7 @@ function roundToNearestFiveMinutes(time) {
     return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
 }
 
-// Time validation function
+// Time validation functions
 function isValidTime(time) {
     if (!time) return false;
     
@@ -100,6 +103,12 @@ function isValidAdvanceBooking(dateStr, timeStr) {
     const hoursDiff = timeDiff / 3600000;
     
     return hoursDiff >= 2;
+}
+
+function isHoliday(date) {
+    // Convert date to yyyy/mm/dd format
+    const formattedDate = date.split('-').join('/');
+    return holidays.includes(formattedDate);
 }
 
 // Modal display function
@@ -156,7 +165,14 @@ function showModal(message, type) {
 }
 
 // Initialize form functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('/api/holidays');
+        holidays = await response.json();
+    } catch (error) {
+        console.error('Error fetching holidays:', error);
+    }
+
     const tableSelect = document.getElementById('table');
     const tableSelectParent = tableSelect.parentElement;
     const sections = document.querySelectorAll("section[id]");
@@ -242,11 +258,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Add event listener for date input to check holidays
+    dateInput.addEventListener('change', function() {
+        if (this.value && isHoliday(this.value)) {
+            showModal('Sorry, the restaurant is closed on this date.', 'error');
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+        }
+    });
 });
 
 document.getElementById('table').addEventListener('change', function () {
     const tableSelectButton = document.getElementById('tableSelectButton');
-    tableSelectButton.style.border = ''; // รีเซ็ตกรอบสีแดง
+    tableSelectButton.style.border = '';
 });
 
 // Form submission handler
@@ -265,54 +291,19 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         time: document.getElementById('time')
     };
 
-    const isHoliday = await checkHoliday(fields.date.value);
-    if (isHoliday) {
-        showModal('Sorry, the restaurant is closed on this date.', 'error');
-        fields.date.value = '';
-        fields.date.style.border = '2px solid #dc3545';
-        fields.date.classList.add('is-invalid');
-        submitButton.disabled = false;
-        submitButton.innerHTML = 'Submit';
-        return;
-    }
-
     // Reset field styles
     Object.values(fields).forEach(field => {
         field.style.border = '';
         field.classList.remove('is-invalid');
     });
 
-    // Check for empty fields
-    const emptyFields = [];
-    Object.entries(fields).forEach(([key, field]) => {
-        if (!field.value.trim()) {
-            emptyFields.push(key);
-            if (key === 'table') {
-                document.getElementById('tableSelectButton').style.border = '2px solid #dc3545';
-            } else {
-                field.style.border = '2px solid #dc3545';
-                field.classList.add('is-invalid');
-            }
-        }
-    });
-
-    // Time validation functions
-    function isWithinBusinessHours(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        const bookingTime = hours * 60 + minutes;
-        
-        const [openHours, openMinutes] = ['10', '00'].map(Number);
-        const [closeHours, closeMinutes] = ['22', '00'].map(Number);
-        
-        const openTime = openHours * 60 + openMinutes;
-        const closeTime = closeHours * 60 + closeMinutes;
-        
-        return bookingTime >= openTime && bookingTime <= closeTime;
-    }
-
-    function isValidTimeInterval(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return minutes % 5 === 0;
+    // Check for holiday first
+    if (fields.date.value && isHoliday(fields.date.value)) {
+        showModal('Sorry, the restaurant is closed on this date.', 'error');
+        fields.date.classList.add('is-invalid');
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit';
+        return;
     }
 
     //validation checks
@@ -332,10 +323,10 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
-    if (!fields.table.value) { // ตรวจสอบว่าไม่ได้เลือกโต๊ะ
+    if (!fields.table.value) {
         showModal('Please select a "Table Size"', 'error');
         const tableSelectButton = document.getElementById('tableSelectButton');
-        tableSelectButton.style.border = '2px solid #dc3545'; // เปลี่ยนกรอบเป็นสีแดง
+        tableSelectButton.style.border = '2px solid #dc3545';
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
         return;
@@ -357,18 +348,8 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
-    // Check business hours first
-    if (!isWithinBusinessHours(fields.time.value)) {
-        showModal('Please select a time between 10:00 AM and 10:00 PM.', 'error');
-        fields.time.classList.add('is-invalid');
-        submitButton.disabled = false;
-        submitButton.innerHTML = 'Submit';
-        return;
-    }
-
-    // Then check time intervals
-    if (!isValidTimeInterval(fields.time.value)) {
-        showModal('Please select a time in 5-minute intervals.', 'error');
+    // Check business hours and time intervals
+    if (!isValidTime(fields.time.value)) {
         fields.time.classList.add('is-invalid');
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
@@ -424,35 +405,5 @@ document.getElementById('bookingForm').addEventListener('submit', async function
     } finally {
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
-    }
-});
-
-async function checkHoliday(dateStr) {
-    try {
-        const response = await fetch('/api/holidays');
-        const holidays = await response.json();
-        return holidays.includes(dateStr);
-    } catch (error) {
-        console.error('Error checking holidays:', error);
-        return false;
-    }
-}
-
-// Add event listener for date input
-document.getElementById('date').addEventListener('change', async function() {
-    const dateInput = this;
-    const dateValue = dateInput.value;
-    
-    if (dateValue) {
-        const isHoliday = await checkHoliday(dateValue);
-        if (isHoliday) {
-            showModal('Sorry, the restaurant is closed on this date.', 'error');
-            dateInput.value = ''; // Reset date input
-            dateInput.style.border = '2px solid #dc3545';
-            dateInput.classList.add('is-invalid');
-        } else {
-            dateInput.style.border = '';
-            dateInput.classList.remove('is-invalid');
-        }
     }
 });
