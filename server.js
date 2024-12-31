@@ -187,5 +187,28 @@ function replyMessage(replyToken, text) {
     });
 }
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
+
+// function ping ตัวเอง
+function keepAlive() {
+  // แก้ URL นี้เป็น URL ของ app คุณบน render
+  const url = "https://poseidon-seafood.onrender.com/health";  
+  
+  https.get(url, (res) => {
+    console.log('Ping successful at:', new Date().toISOString());
+  }).on('error', (err) => {
+    console.log('Ping failed:', err);
+  });
+}
+
+// เริ่ม ping ทุก 14 นาที
+setInterval(keepAlive, 5 * 60 * 1000);
+
+// ส่วนอื่นๆ ของ app คุณ...
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
