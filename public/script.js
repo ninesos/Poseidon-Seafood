@@ -265,6 +265,17 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         time: document.getElementById('time')
     };
 
+    const isHoliday = await checkHoliday(fields.date.value);
+    if (isHoliday) {
+        showModal('Sorry, the restaurant is closed on this date.', 'error');
+        fields.date.value = '';
+        fields.date.style.border = '2px solid #dc3545';
+        fields.date.classList.add('is-invalid');
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit';
+        return;
+    }
+
     // Reset field styles
     Object.values(fields).forEach(field => {
         field.style.border = '';
@@ -413,5 +424,35 @@ document.getElementById('bookingForm').addEventListener('submit', async function
     } finally {
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
+    }
+});
+
+async function checkHoliday(dateStr) {
+    try {
+        const response = await fetch('/api/holidays');
+        const holidays = await response.json();
+        return holidays.includes(dateStr);
+    } catch (error) {
+        console.error('Error checking holidays:', error);
+        return false;
+    }
+}
+
+// Add event listener for date input
+document.getElementById('date').addEventListener('change', async function() {
+    const dateInput = this;
+    const dateValue = dateInput.value;
+    
+    if (dateValue) {
+        const isHoliday = await checkHoliday(dateValue);
+        if (isHoliday) {
+            showModal('Sorry, the restaurant is closed on this date.', 'error');
+            dateInput.value = ''; // Reset date input
+            dateInput.style.border = '2px solid #dc3545';
+            dateInput.classList.add('is-invalid');
+        } else {
+            dateInput.style.border = '';
+            dateInput.classList.remove('is-invalid');
+        }
     }
 });
