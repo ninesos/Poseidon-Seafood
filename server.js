@@ -25,7 +25,29 @@ const RESTAURANT_HOURS = {
     close: '22:00'
 };
 
+// New function to clean up past holidays
+function cleanupPastHolidays() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Convert today to YYYY/MM/DD format for comparison
+    const formattedToday = today.toISOString().split('T')[0].replace(/-/g, '/');
+    
+    // Filter out past holidays
+    const updatedHolidays = holidays.filter(holiday => {
+        return holiday >= formattedToday;
+    });
+    
+    // Update holidays array if any were removed
+    if (updatedHolidays.length !== holidays.length) {
+        holidays = updatedHolidays;
+        console.log(`Cleaned up holidays. Remaining holidays: ${holidays.length}`);
+    }
+}
+
 function isHoliday(date) {
+    // Clean up past holidays before checking
+    cleanupPastHolidays();
     return holidays.includes(date);
 }
 
@@ -141,6 +163,8 @@ app.delete('/api/queues/:queueNumber', (req, res) => {
 });
 
 app.get('/api/holidays', (req, res) => {
+    // Clean up past holidays before sending the response
+    cleanupPastHolidays();
     res.json(holidays);
 });
 
@@ -153,6 +177,8 @@ app.post('/line-webhook', (req, res) => {
             const queueList = getGroupedQueues();
             replyMessage(event.replyToken, queueList);
         } else if (message.toLowerCase() === 'qc') {
+            // Clean up past holidays before showing the list
+            cleanupPastHolidays();
             const holidayList = holidays.length > 0 ? 
                 `Restaurant holidays:\n${holidays.join('\n')}` : 
                 'No holidays scheduled';
@@ -160,6 +186,8 @@ app.post('/line-webhook', (req, res) => {
         } else if (message.startsWith('c ')) {
             const date = message.split(' ')[1];
             if (date && /^\d{4}\/\d{2}\/\d{2}$/.test(date)) {
+                // Clean up past holidays before adding new one
+                cleanupPastHolidays();
                 if (!holidays.includes(date)) {
                     holidays.push(date);
                     holidays.sort();
@@ -172,8 +200,14 @@ app.post('/line-webhook', (req, res) => {
             }
         } else if (message.startsWith('d')) {
             const queueNumber = message.split(' ')[1];
-            queues = queues.filter(q => q.queueNumber !== queueNumber);
-            replyMessage(event.replyToken, `Queue ${queueNumber} has been managed.`);
+            const queueExists = queues.some(q => q.queueNumber === queueNumber);
+            
+            if (!queueExists) {
+                replyMessage(event.replyToken, `Queue not found ${queueNumber}.`);
+            } else {
+                queues = queues.filter(q => q.queueNumber !== queueNumber);
+                replyMessage(event.replyToken, `Queue ${queueNumber} successfully managed.`);
+            }
         }
     });
     res.sendStatus(200);
@@ -192,9 +226,7 @@ app.get('/health', (req, res) => {
   res.send('OK');
 });
 
-// function ping ตัวเอง
 function keepAlive() {
-  // แก้ URL นี้เป็น URL ของ app คุณบน render
   const url = "https://poseidon-seafood.onrender.com/health";  
   
   https.get(url, (res) => {
@@ -204,10 +236,7 @@ function keepAlive() {
   });
 }
 
-// เริ่ม ping ทุก 14 นาที
 setInterval(keepAlive, 5 * 60 * 1000);
-
-// ส่วนอื่นๆ ของ app คุณ...
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
