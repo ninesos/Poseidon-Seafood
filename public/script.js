@@ -114,6 +114,10 @@ function showModal(message, type) {
     const modalContent = modalEl.querySelector('.modal-content');
     const submitButton = document.querySelector('button[type="submit"]');
     
+    // Clear existing event listeners
+    const newModalEl = modalEl.cloneNode(true);
+    modalEl.parentNode.replaceChild(newModalEl, modalEl);
+    
     modalContent.classList.remove('border-success', 'border-danger');
     modalHeader.classList.remove('bg-success', 'bg-danger', 'text-white');
     
@@ -149,9 +153,10 @@ function showModal(message, type) {
         messageEl.textContent = message;
     }
     
-    const modal = new bootstrap.Modal(modalEl);
+    const modal = new bootstrap.Modal(newModalEl);
     
-    modalEl.addEventListener('hidden.bs.modal', function () {
+    // Add event listener only once
+    newModalEl.addEventListener('hidden.bs.modal', function () {
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
     }, { once: true });
@@ -256,7 +261,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 document.getElementById('table').addEventListener('change', function () {
     const tableSelectButton = document.getElementById('tableSelectButton');
-    tableSelectButton.style.border = ''; // รีเซ็ตกรอบสีแดง
+    tableSelectButton.style.border = '';
 });
 
 function isHoliday(date) {
@@ -295,7 +300,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
             if (key === 'table') {
                 document.getElementById('tableSelectButton').style.border = '2px solid #dc3545';
             } else {
-                field.style.border = '1px solid #dc3545';
+                field.style.border = '2px solid #dc3545';
                 field.classList.add('is-invalid');
             }
         }
@@ -345,10 +350,10 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         return;
     }
 
-    if (!fields.table.value) { // ตรวจสอบว่าไม่ได้เลือกโต๊ะ
+    if (!fields.table.value) {
         showModal('Please select a "Table Size"', 'error');
         const tableSelectButton = document.getElementById('tableSelectButton');
-        tableSelectButton.style.border = '2px solid #dc3545'; // เปลี่ยนกรอบเป็นสีแดง
+        tableSelectButton.style.border = '2px solid #dc3545';
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
         return;
@@ -442,7 +447,6 @@ document.getElementById('bookingForm').addEventListener('submit', async function
 
 document.getElementById('date').addEventListener('change', function() {
     if (this.value && isHoliday(this.value)) {
-        showModal('Sorry, the restaurant is closed on this date.', 'error');
         this.classList.add('is-invalid');
     } else {
         this.classList.remove('is-invalid');
