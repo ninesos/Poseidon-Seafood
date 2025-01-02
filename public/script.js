@@ -114,10 +114,6 @@ function showModal(message, type) {
     const modalContent = modalEl.querySelector('.modal-content');
     const submitButton = document.querySelector('button[type="submit"]');
     
-    // Clear existing event listeners
-    const newModalEl = modalEl.cloneNode(true);
-    modalEl.parentNode.replaceChild(newModalEl, modalEl);
-    
     modalContent.classList.remove('border-success', 'border-danger');
     modalHeader.classList.remove('bg-success', 'bg-danger', 'text-white');
     
@@ -153,10 +149,9 @@ function showModal(message, type) {
         messageEl.textContent = message;
     }
     
-    const modal = new bootstrap.Modal(newModalEl);
+    const modal = new bootstrap.Modal(modalEl);
     
-    // Add event listener only once
-    newModalEl.addEventListener('hidden.bs.modal', function () {
+    modalEl.addEventListener('hidden.bs.modal', function () {
         submitButton.disabled = false;
         submitButton.innerHTML = 'Submit';
     }, { once: true });
