@@ -51,6 +51,8 @@ document.head.insertAdjacentHTML('beforeend', `
 `);
 
 let holidays = [];
+let ws;
+let currentQueues = [];
 
 // Function to round time to nearest 5 minutes
 function roundToNearestFiveMinutes(time) {
@@ -446,3 +448,76 @@ document.getElementById('date').addEventListener('change', function() {
         this.classList.remove('is-invalid');
     }
 });
+
+function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}`;
+    
+    ws = new WebSocket(wsUrl);
+    
+    ws.onmessage = (event) => {
+        const { type, data } = JSON.parse(event.data);
+        
+        switch (type) {
+            case 'init':
+                holidays = data.holidays;
+                currentQueues = data.queues;
+                TABLE_LIMITS = data.tableLimits;
+                updateFormValidation();
+                break;
+                
+            case 'holidays':
+                holidays = data;
+                updateFormValidation();
+                break;
+                
+            case 'queues':
+                currentQueues = data;
+                updateFormValidation();
+                break;
+        }
+    };
+    
+    ws.onclose = () => {
+        setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
+    };
+}
+
+function updateFormValidation() {
+    const dateInput = document.getElementById('date');
+    const tableSelect = document.getElementById('table');
+    
+    if (dateInput.value) {
+        // Check holiday
+        if (isHoliday(dateInput.value)) {
+            dateInput.classList.add('is-invalid');
+            showModal('Sorry, the restaurant is closed on this date.', 'error');
+        } else {
+            dateInput.classList.remove('is-invalid');
+        }
+        
+        // Check table availability
+        if (tableSelect.value) {
+            const tableCount = currentQueues.filter(q => 
+                q.date === dateInput.value && 
+                q.table === tableSelect.value
+            ).length;
+            
+            if (tableCount >= TABLE_LIMITS[tableSelect.value]) {
+                tableSelect.classList.add('is-invalid');
+                document.getElementById('tableSelectButton').style.border = '2px solid #dc3545';
+                showModal(`Sorry, all ${tableSelect.value} tables are booked for this date`, 'error');
+            } else {
+                tableSelect.classList.remove('is-invalid');
+                document.getElementById('tableSelectButton').style.border = '';
+            }
+        }
+    }
+}
+
+// Add event listeners for real-time validation
+document.getElementById('date').addEventListener('change', updateFormValidation);
+document.getElementById('table').addEventListener('change', updateFormValidation);
+
+// Initialize WebSocket connection
+connectWebSocket();

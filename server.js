@@ -4,8 +4,12 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const https = require('https');
+const { Server } = require('ws');
 
 const app = express();
+const server = require('http').createServer(app);
+const wss = new Server({ server });
+
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -25,28 +29,54 @@ const RESTAURANT_HOURS = {
     close: '22:00'
 };
 
-// New function to clean up past holidays
+// WebSocket handling
+const clients = new Set();
+
+wss.on('connection', (ws) => {
+    clients.add(ws);
+    
+    // Send initial data
+    ws.send(JSON.stringify({
+        type: 'init',
+        data: {
+            holidays,
+            queues,
+            tableLimits: TABLE_LIMITS
+        }
+    }));
+
+    ws.on('close', () => {
+        clients.delete(ws);
+    });
+});
+
+function broadcastUpdate(type, data) {
+    const message = JSON.stringify({ type, data });
+    for (const client of clients) {
+        if (client.readyState === 1) {
+            client.send(message);
+        }
+    }
+}
+
 function cleanupPastHolidays() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Convert today to YYYY/MM/DD format for comparison
     const formattedToday = today.toISOString().split('T')[0].replace(/-/g, '/');
     
-    // Filter out past holidays
     const updatedHolidays = holidays.filter(holiday => {
         return holiday >= formattedToday;
     });
     
-    // Update holidays array if any were removed
     if (updatedHolidays.length !== holidays.length) {
         holidays = updatedHolidays;
+        broadcastUpdate('holidays', holidays);
         console.log(`Cleaned up holidays. Remaining holidays: ${holidays.length}`);
     }
 }
 
 function isHoliday(date) {
-    // Clean up past holidays before checking
     cleanupPastHolidays();
     return holidays.includes(date);
 }
@@ -134,6 +164,9 @@ app.post('/api/book', async (req, res) => {
     const queueNumber = `Q${Math.floor(1000 + Math.random() * 9000)}`;
     const newQueue = { name, lineId, table, date, time, queueNumber };
     queues.push(newQueue);
+    
+    // Broadcast queue update
+    broadcastUpdate('queues', queues);
 
     try {
         await axios.post('https://api.line.me/v2/bot/message/push', {
@@ -159,11 +192,11 @@ app.get('/api/queues', (req, res) => {
 app.delete('/api/queues/:queueNumber', (req, res) => {
     const queueNumber = req.params.queueNumber;
     queues = queues.filter(q => q.queueNumber !== queueNumber);
+    broadcastUpdate('queues', queues);
     res.json({ message: `Queue ${queueNumber} removed` });
 });
 
 app.get('/api/holidays', (req, res) => {
-    // Clean up past holidays before sending the response
     cleanupPastHolidays();
     res.json(holidays);
 });
@@ -177,7 +210,6 @@ app.post('/line-webhook', (req, res) => {
             const queueList = getGroupedQueues();
             replyMessage(event.replyToken, queueList);
         } else if (message.toLowerCase() === 'qc') {
-            // Clean up past holidays before showing the list
             cleanupPastHolidays();
             const holidayList = holidays.length > 0 ? 
                 `Restaurant holidays:\n${holidays.join('\n')}` : 
@@ -186,11 +218,11 @@ app.post('/line-webhook', (req, res) => {
         } else if (message.startsWith('c ')) {
             const date = message.split(' ')[1];
             if (date && /^\d{4}\/\d{2}\/\d{2}$/.test(date)) {
-                // Clean up past holidays before adding new one
                 cleanupPastHolidays();
                 if (!holidays.includes(date)) {
                     holidays.push(date);
                     holidays.sort();
+                    broadcastUpdate('holidays', holidays);
                     replyMessage(event.replyToken, `Added holiday: ${date}`);
                 } else {
                     replyMessage(event.replyToken, 'This date is already marked as a holiday');
@@ -206,6 +238,7 @@ app.post('/line-webhook', (req, res) => {
                 replyMessage(event.replyToken, `Queue not found ${queueNumber}.`);
             } else {
                 queues = queues.filter(q => q.queueNumber !== queueNumber);
+                broadcastUpdate('queues', queues);
                 replyMessage(event.replyToken, `Queue ${queueNumber} successfully managed.`);
             }
         }
@@ -223,22 +256,22 @@ function replyMessage(replyToken, text) {
 }
 
 app.get('/health', (req, res) => {
-  res.send('OK');
+    res.send('OK');
 });
 
 function keepAlive() {
-  const url = "https://poseidon-seafood.onrender.com/health";  
-  
-  https.get(url, (res) => {
-    console.log('Ping successful at:', new Date().toISOString());
-  }).on('error', (err) => {
-    console.log('Ping failed:', err);
-  });
+    const url = "https://poseidon-seafood.onrender.com/health";  
+    
+    https.get(url, (res) => {
+        console.log('Ping successful at:', new Date().toISOString());
+    }).on('error', (err) => {
+        console.log('Ping failed:', err);
+    });
 }
 
 setInterval(keepAlive, 5 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
