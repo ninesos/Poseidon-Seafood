@@ -485,17 +485,15 @@ function connectWebSocket() {
 function updateFormValidation() {
     const dateInput = document.getElementById('date');
     const tableSelect = document.getElementById('table');
+    const tableSelectButton = document.getElementById('tableSelectButton');
     
     if (dateInput.value) {
-        // Check holiday
         if (isHoliday(dateInput.value)) {
             dateInput.classList.add('is-invalid');
-            showModal('Sorry, the restaurant is closed on this date.', 'error');
+            return;
         } else {
             dateInput.classList.remove('is-invalid');
         }
-        
-        // Check table availability
         if (tableSelect.value) {
             const tableCount = currentQueues.filter(q => 
                 q.date === dateInput.value && 
@@ -504,11 +502,10 @@ function updateFormValidation() {
             
             if (tableCount >= TABLE_LIMITS[tableSelect.value]) {
                 tableSelect.classList.add('is-invalid');
-                document.getElementById('tableSelectButton').style.border = '2px solid #dc3545';
-                showModal(`Sorry, all ${tableSelect.value} tables are booked for this date`, 'error');
+                tableSelectButton.style.border = '2px solid #dc3545';
             } else {
                 tableSelect.classList.remove('is-invalid');
-                document.getElementById('tableSelectButton').style.border = '';
+                tableSelectButton.style.border = '';
             }
         }
     }
